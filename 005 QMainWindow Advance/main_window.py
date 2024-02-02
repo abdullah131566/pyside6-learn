@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QApplication, QToolBar, QPushButton
+from PySide6.QtWidgets import QMainWindow, QApplication, QToolBar, QStatusBar, QPushButton
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QIcon, QAction
 
@@ -44,6 +44,17 @@ class MainWindow(QMainWindow):
     toolbar.addSeparator()
     playButton = QPushButton(QIcon("C:/Users/User/Documents/DEV/python/001pyside6/005 QMainWindow Advance/play.webp"), "&Play")
     toolbar.addWidget(playButton)
+    print(playButton.parent())
 
-  def cursorSelection(self):
-    print("Cursor Selected")
+    statusBar = QStatusBar(self)
+    self.setStatusBar(statusBar)
+    statusBar.addAction(quitAction)
+
+
+
+
+  def cursorSelection(self, selected):
+    if selected:
+      self.statusBar().showMessage("Cursor Selected", 3000)
+    else:
+      self.statusBar().showMessage("Cursor Unselected", 3000)
