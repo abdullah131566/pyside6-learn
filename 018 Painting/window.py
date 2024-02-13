@@ -1,8 +1,22 @@
 from PySide6.QtWidgets import QWidget, QMainWindow, QVBoxLayout, QPushButton, QLabel
 from PySide6.QtGui import QMouseEvent, QPixmap, QPainter, QColor, QPen, QFont
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, Property
 
 import random as rd
+
+class PixmapCanvas(QLabel):
+    def __init__(self, mouseMoveCb = None, width = 400, height = 400):
+        super().__init__()
+        pixmap = QPixmap(QSize(width, height))
+        pixmap.fill(QColor("white"))
+        self.setPixmap(pixmap)
+        self.setFixedSize(QSize(width, height)) # for exact mouse capturing
+        self.mouseMoveCb = mouseMoveCb if mouseMoveCb else lambda: None
+
+    def mouseMoveEvent(self, ev: QMouseEvent) -> None:
+        self.mouseMoveCb(ev)
+        return super().mouseMoveEvent(ev)
+    
 
 class MyWindow(QMainWindow):
     def __init__(self):
@@ -16,11 +30,10 @@ class MyWindow(QMainWindow):
         centralWidget.setLayout(layout)
         self.setCentralWidget(centralWidget)
 
+        self.lastX, self.lastY = None, None
+
         # add content to layout
-        self.pixmapHolder = QLabel()
-        canvas = QPixmap(QSize(400, 350))
-        canvas.fill(QColor("white"))
-        self.pixmapHolder.setPixmap(canvas)
+        self.pixmapHolder = PixmapCanvas(self.drawOnMouse)
         layout.addWidget(self.pixmapHolder)
 
         self.drawButton = QPushButton("Draw")
@@ -60,10 +73,24 @@ class MyWindow(QMainWindow):
         painter.end()
         self.pixmapHolder.setPixmap(canvas)
 
-    # def mouseMoveEvent(self, event: QMouseEvent) -> None:
-    #     canvas = self.pixmapHolder.pixmap()
-    #     painter = QPainter(canvas)
-    #     painter.drawPoint(event.position())
-    #     painter.end()
-    #     self.pixmapHolder.setPixmap(canvas)
-    #     return super().mouseMoveEvent(event)
+    def drawOnMouse(self, event: QMouseEvent) -> None:
+        if not self.lastX:
+            self.lastX = event.position().x()
+            self.lastY = event.position().y()
+            return
+        
+        canvas = self.pixmapHolder.pixmap()
+        painter = QPainter(canvas)
+        # painter.drawPoint(event.position())
+        painter.drawLine(self.lastX, self.lastY, event.position().x(), event.position().y())
+        painter.end()
+        self.pixmapHolder.setPixmap(canvas)
+
+        self.lastX = event.position().x()
+        self.lastY = event.position().y()
+
+
+    def mouseReleaseEvent(self, ev: QMouseEvent) -> None:
+        self.lastX = None
+        self.lastY = None
+        return super().mouseReleaseEvent(ev)
