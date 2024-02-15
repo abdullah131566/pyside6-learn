@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QWidget, QDial
-from PySide6.QtGui import QPainter, QPaintEvent, QPen, QBrush, QColor, QFont
+from PySide6.QtGui import QMouseEvent, QPainter, QPaintEvent, QPen, QBrush, QColor, QFont
 from PySide6.QtCore import QRect, QSize, Qt
 
 
@@ -56,6 +56,18 @@ class _Bar(QWidget):
             painter.fillRect(bar, brush)
 
         painter.end()
+
+    def mousePressEvent(self, event: QMouseEvent) -> None:
+        percentClicked = 0.1 + (self.height() - event.y()) / self.height()
+        dialMax = self.parent().dial.maximum()
+        self.parent().dial.setValue(percentClicked * dialMax)
+        self.update()
+
+    def mouseMoveEvent(self, event: QMouseEvent) -> None:
+        percentClicked = 0.05 + (self.height() - event.y()) / self.height()
+        dialMax = self.parent().dial.maximum()
+        self.parent().dial.setValue(percentClicked * dialMax)
+        self.update()
 
 
 
